@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0908">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dramatis Personae</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0908;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* altezza reale su mobile, esclude barra browser */
+    font-family: 'Crimson Text', Georgia, serif;
+  }
+
+  /* --- Pulsante fullscreen --- */
+  .btn-fullscreen {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.2rem);
+    right: 1.2rem;
+    z-index: 100;
+    background: rgba(10, 9, 8, 0.55);
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    color: rgba(201, 168, 76, 0.45);
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s, color 0.2s, border-color 0.2s;
+    opacity: 0.5;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-fullscreen svg { width: 1.1rem; height: 1.1rem; }
+  .btn-fullscreen:active,
+  .btn-fullscreen:focus { outline: none; color: rgba(201,168,76,0.9); border-color: rgba(201,168,76,0.5); }
+  .btn-fullscreen.faded { opacity: 0.12; }
+
+  /* --- Idle state --- */
+  .idle {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    transition: opacity 0.8s ease;
+  }
+  .idle.hidden { opacity: 0; pointer-events: none; }
+
+  .idle-sigil {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #3d362e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse-sigil 3s ease-in-out infinite;
+  }
+  .idle-sigil::after {
+    content: '⚔';
+    font-size: 1.4rem;
+    color: #5a4f3f;
+  }
+  @keyframes pulse-sigil {
+    0%, 100% { border-color: #3d362e; }
+    50% { border-color: #5a4f3f; }
+  }
+
+  .idle-text {
+    margin-top: 1rem;
+    color: #4a4035;
+    font-style: italic;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* --- Portrait display --- */
+  .portrait-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .portrait-stage.visible { opacity: 1; }
+
+  .portrait-frame {
+    position: relative;
+    width: 85vw;
+    max-width: 400px;
+    aspect-ratio: 3/4;
+    border: 3px solid #c9a84c;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow:
+      0 0 40px rgba(201, 168, 76, 0.15),
+      0 0 80px rgba(0, 0, 0, 0.6),
+      inset 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .portrait-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    margin: 6px;
+    border-radius: 2px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    animation: reveal 0.8s ease-out;
+  }
+
+  @keyframes reveal {
+    from { transform: scale(1.05); filter: brightness(0.3); }
+    to { transform: scale(1); filter: brightness(1); }
+  }
+
+  /* Vignette overlay */
+  .portrait-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(10,9,8,0.5) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .npc-name {
+    margin-top: 1.2rem;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    color: #c9a84c;
+    text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+    animation: name-in 0.6s ease-out 0.3s both;
+  }
+
+  @keyframes name-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Ambient background --- */
+  .ambient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .ambient::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(ellipse at 30% 40%, rgba(201,168,76,0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 60%, rgba(139,58,58,0.02) 0%, transparent 60%);
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(-5%, -5%) rotate(0deg); }
+    to { transform: translate(5%, 5%) rotate(3deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+
+<button id="btnFullscreen" class="btn-fullscreen" aria-label="Schermo intero">
+  <svg id="iconExpand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>
+  </svg>
+  <svg id="iconCompress" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+    <path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5"/>
+  </svg>
+</button>
+
+<div class="idle" id="idle">
+  <div class="idle-sigil"></div>
+  <div class="idle-text">Waiting for the DM…</div>
+</div>
+
+<div class="portrait-stage" id="stage">
+  <div class="portrait-frame">
+    <img class="portrait-img" id="portrait" src="" alt="">
+  </div>
+  <div class="npc-name" id="npcName"></div>
+</div>
+
+<script>
+  const idle = document.getElementById('idle');
+  const stage = document.getElementById('stage');
+  const portrait = document.getElementById('portrait');
+  const npcName = document.getElementById('npcName');
+
+  let currentId = null;
+  let currentImage = null;
+
+  async function poll() {
+    try {
+      const res = await fetch('/api/active');
+      const { active } = await res.json();
+
+      if (!active) {
+        if (currentId !== null) {
+          // NPC was dismissed
+          stage.classList.remove('visible');
+          setTimeout(() => { idle.classList.remove('hidden'); }, 400);
+          currentId = null;
+          currentImage = null;
+        }
+      } else if (active.id !== currentId) {
+        // New NPC
+        currentId = active.id;
+        currentImage = active.image;
+
+        // Preload image
+        const img = new Image();
+        img.onload = () => {
+          portrait.src = active.image;
+          npcName.textContent = active.name;
+          // Re-trigger animations
+          portrait.style.animation = 'none';
+          npcName.style.animation = 'none';
+          void portrait.offsetHeight; // reflow
+          portrait.style.animation = '';
+          npcName.style.animation = '';
+
+          idle.classList.add('hidden');
+          setTimeout(() => { stage.classList.add('visible'); }, 100);
+        };
+        img.src = active.image;
+      }
+    } catch (e) {
+      // server unreachable, keep waiting
+    }
+  }
+
+  // Poll every 2 seconds
+  setInterval(poll, 2000);
+  poll();
+
+  // Prevent pull-to-refresh on mobile
+  document.addEventListener('touchmove', e => { if (e.touches.length === 1) e.preventDefault(); }, { passive: false });
+
+  // --- Fullscreen ---
+  const btnFS = document.getElementById('btnFullscreen');
+  const iconExpand = document.getElementById('iconExpand');
+  const iconCompress = document.getElementById('iconCompress');
+  let fadeTimer = null;
+
+  function updateFsIcon() {
+    const isFs = !!document.fullscreenElement;
+    iconExpand.style.display = isFs ? 'none' : '';
+    iconCompress.style.display = isFs ? '' : 'none';
+  }
+
+  function showBtn() {
+    btnFS.classList.remove('faded');
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => btnFS.classList.add('faded'), 3500);
+  }
+
+  btnFS.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (e) { /* iOS Safari: fullscreen API non supportata */ }
+    showBtn();
+  });
+
+  document.addEventListener('fullscreenchange', updateFsIcon);
+
+  // Riappare al tocco
+  document.addEventListener('touchstart', showBtn, { passive: true });
+
+  showBtn(); // avvia il timer di auto-fade
+</script>
+
+</body>
+</html>

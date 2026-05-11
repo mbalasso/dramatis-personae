@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dramatis Personae — DM Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1714;
+    --surface: #231f1b;
+    --surface-hover: #2e2924;
+    --border: #3d362e;
+    --border-active: #c9a84c;
+    --gold: #c9a84c;
+    --gold-dim: #8a7233;
+    --text: #e8dcc8;
+    --text-dim: #9a8e7c;
+    --red: #8b3a3a;
+    --red-hover: #a54545;
+    --green: #3a6b3a;
+    --green-glow: #4a8b4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Text', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #231f1b 0%, var(--bg) 100%);
+  }
+
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.3rem;    
+  }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+
+  /* --- Add NPC form --- */
+  .add-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .add-form input[type="text"] {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.65rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    font-size: 1.05rem;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .add-form input[type="text"]:focus { border-color: var(--gold-dim); }
+  .add-form input[type="text"]::placeholder { color: var(--text-dim); }
+
+  .file-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Crimson Text', serif;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .file-label:hover { border-color: var(--gold-dim); color: var(--text); }
+  .file-label.has-file { color: var(--gold); border-color: var(--gold-dim); }
+  .file-label input { display: none; }
+
+  .paste-thumb {
+    height: 1.6rem;
+    width: auto;
+    border-radius: 2px;
+    object-fit: cover;
+    display: none;
+    vertical-align: middle;
+    margin-left: 0.3rem;
+  }
+
+  .paste-hint {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-dim);    
+    margin-top: -1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-add {
+    padding: 0.65rem 1.4rem;
+    background: var(--gold-dim);
+    border: none;
+    color: var(--bg);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-add:hover { background: var(--gold); }
+  .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* --- NPC Grid --- */
+  .npc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.6rem;
+  }
+
+  .npc-card {
+    position: relative;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.25s, transform 0.15s, box-shadow 0.25s;
+  }
+  .npc-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+
+  .npc-card.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.2), inset 0 0 20px rgba(201, 168, 76, 0.05);
+  }
+
+  .npc-card .portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(20%) brightness(0.9);
+    transition: filter 0.3s;
+  }
+  .npc-card:hover .portrait,
+  .npc-card.active .portrait { filter: grayscale(0%) brightness(1); }
+
+  .npc-card .info {
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .npc-card .name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .npc-card.active .name { color: var(--gold); }
+
+  .btn-delete {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.2rem;
+    line-height: 1;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-delete:hover { color: var(--red-hover); }
+
+  .active-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--green-glow);
+    box-shadow: 0 0 8px var(--green-glow);
+    display: none;
+  }
+  .npc-card.active .active-badge { display: block; }
+
+  /* --- Empty state --- */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 1.1rem;
+  }
+
+  /* --- Connection info --- */
+  .conn-info {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .conn-info code {
+    color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  /* --- Deactivate button --- */
+  .btn-deactivate {
+    display: block;
+    margin: 1.5rem auto 1.5rem;
+    padding: 0.5rem 1.2rem;
+    background: var(--red);
+    border: none;
+    color: var(--text);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-deactivate:hover { background: var(--red-hover); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Dramatis Personae</h1>
+  <p>DM Control Panel</p>
+</header>
+
+<div class="container">
+
+  <div class="add-form">
+    <input type="text" id="npcName" placeholder="NPC name…" autocomplete="off">
+    <label class="file-label" id="fileLabel">
+      <span id="fileLabelText">📎 Select a portrait from disk</span>
+      <img id="pasteThumb" class="paste-thumb" src="" alt="">
+      <input type="file" id="npcImage" accept="image/*">
+    </label>
+    <button class="btn-add" id="btnAdd" disabled>Add</button>
+  </div>
+  <p class="paste-hint">or paste an image with CRTL+V anywhere in the page</p>
+  <button class="btn-deactivate" id="btnDeactivate" style="display:none">✕ Hide Portrait</button>
+
+  <div id="npcGrid" class="npc-grid"></div>
+  <div id="empty" class="empty">No NPCs yet. Add one above to get started.</div>
+
+  <div class="conn-info">
+    Player view: open <code id="playerUrl">/players</code> on a phone in the same network
+  </div>
+
+</div>
+
+<script>
+  const grid = document.getElementById('npcGrid');
+  const empty = document.getElementById('empty');
+  const nameInput = document.getElementById('npcName');
+  const fileInput = document.getElementById('npcImage');
+  const fileLabel = document.getElementById('fileLabel');
+  const fileLabelText = document.getElementById('fileLabelText');
+  const pasteThumb = document.getElementById('pasteThumb');
+  const btnAdd = document.getElementById('btnAdd');
+  const btnDeactivate = document.getElementById('btnDeactivate');
+
+  let npcs = [];
+  let activeId = null;
+  let pastedFile = null;
+
+  // --- Reset image selection ---
+  function clearImageSelection() {
+    pastedFile = null;
+    fileInput.value = '';
+    fileLabel.classList.remove('has-file');
+    fileLabelText.textContent = '📎 Portrait';
+    if (pasteThumb.src) URL.revokeObjectURL(pasteThumb.src);
+    pasteThumb.src = '';
+    pasteThumb.style.display = 'none';
+  }
+
+  // --- Validation ---
+  function checkForm() {
+    btnAdd.disabled = !(nameInput.value.trim() && (fileInput.files.length || pastedFile));
+  }
+  nameInput.addEventListener('input', checkForm);
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) {
+      pastedFile = null;
+      if (pasteThumb.src) { URL.revokeObjectURL(pasteThumb.src); pasteThumb.src = ''; }
+      pasteThumb.style.display = 'none';
+      fileLabel.classList.add('has-file');
+      fileLabelText.textContent = '✓ ' + fileInput.files[0].name.slice(0, 20);
+    } else {
+      fileLabel.classList.remove('has-file');
+      fileLabelText.textContent = '📎 Portrait';
+    }
+    checkForm();
+  });
+
+  // --- Paste image from clipboard (Ctrl+V) ---
+  document.addEventListener('paste', (e) => {
+    const imgItem = Array.from(e.clipboardData?.items ?? []).find(it => it.type.startsWith('image/'));
+    if (!imgItem) return;
+    const file = imgItem.getAsFile();
+    if (!file) return;
+    fileInput.value = '';
+    pastedFile = file;
+    const objUrl = URL.createObjectURL(file);
+    if (pasteThumb.src) URL.revokeObjectURL(pasteThumb.src);
+    pasteThumb.src = objUrl;
+    pasteThumb.style.display = 'inline-block';
+    fileLabel.classList.add('has-file');
+    fileLabelText.textContent = '📋 Pasted image';
+    checkForm();
+  });
+
+  // --- Add NPC ---
+  btnAdd.addEventListener('click', async () => {
+    const form = new FormData();
+	const name = nameInput.value.trim();
+    form.append('name', name);
+    if (fileInput.files[0]) {
+      form.append('image', fileInput.files[0]);
+    } else {
+      const ext = pastedFile.type.split('/')[1] || 'png';
+      form.append('image', new File([pastedFile], `${name}.${ext}`, { type: pastedFile.type }));
+    }
+    btnAdd.disabled = true;
+    const res = await fetch('/api/npcs', { method: 'POST', body: form });
+    if (res.ok) {
+      nameInput.value = '';
+      clearImageSelection();
+      await refresh();
+    }
+    checkForm();
+  });
+
+  // --- Set active ---
+  async function setActive(id) {
+    await fetch('/api/active', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    activeId = id;
+    render();
+  }
+
+  // --- Delete ---
+  async function deleteNpc(id, e) {
+    e.stopPropagation();
+    if (!confirm('Remove this NPC?')) return;
+    await fetch(`/api/npcs/${id}`, { method: 'DELETE' });
+    await refresh();
+  }
+
+  // --- Deactivate ---
+  btnDeactivate.addEventListener('click', () => setActive(null));
+
+  // --- Render ---
+  function render() {
+    if (!npcs.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      btnDeactivate.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    btnDeactivate.style.display = activeId ? 'block' : 'none';
+
+    grid.innerHTML = npcs.map(n => `
+      <div class="npc-card ${n.id === activeId ? 'active' : ''}" onclick="setActive('${n.id}')">
+        <div class="active-badge"></div>
+        <img class="portrait" src="${n.image}" alt="${n.name}" loading="lazy">
+        <div class="info">
+          <span class="name">${n.name}</span>
+          <button class="btn-delete" onclick="deleteNpc('${n.id}', event)" title="Remove">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- Refresh from server ---
+  async function refresh() {
+    const [npcRes, activeRes] = await Promise.all([
+      fetch('/api/npcs').then(r => r.json()),
+      fetch('/api/active').then(r => r.json())
+    ]);
+    npcs = npcRes.sort((a, b) => a.name.localeCompare(b.name, 'it', { sensitivity: 'base' }));
+    activeId = activeRes.active?.id || null;
+    render();
+  }
+
+  // --- Player URL ---
+  fetch('/api/info').then(r => r.json()).then(({ localIP, port }) => {
+    document.getElementById('playerUrl').textContent = `http://${localIP}:${port}/`;
+  });
+
+  refresh();
+</script>
+
+</body>
+</html>

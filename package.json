@@ -1,0 +1,13 @@
+{
+  "name": "dramatis-personae",
+  "version": "0.1.0",
+  "description": "Show NPC portraits on player phones during D&D sessions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}
