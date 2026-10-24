@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" role="img" aria-label="The DM picks an NPC on the laptop; over the same Wi-Fi, the portrait appears on every player's phone.">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c9a84c"/>
+    </marker>
+    <style>
+      .title { font: 700 22px Georgia, 'Times New Roman', serif; fill: #e8dcc8; }
+      .h { font: 700 18px Georgia, serif; fill: #e8dcc8; }
+      .t { font: 15px Georgia, serif; fill: #9a8e7c; }
+      .card { fill: #2e2924; stroke: #3d362e; stroke-width: 1.2; }
+      .face { fill: #4a4239; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="470" rx="16" fill="#1a1714"/>
+  <text x="40" y="44" class="title">Dramatis Personae — how it works</text>
+
+  <!-- Laptop -->
+  <rect x="80" y="100" width="340" height="210" rx="10" fill="#0e0c0a" stroke="#8a7233" stroke-width="2"/>
+  <rect x="96" y="116" width="308" height="178" rx="4" fill="#231f1b"/>
+  <g>
+    <rect x="114" y="140" width="80" height="120" rx="4" class="card"/>
+    <circle cx="154" cy="182" r="14" class="face"/><path d="M130,240 C132,214 142,204 154,204 C166,204 176,214 178,240 z" class="face"/>
+    <rect x="210" y="140" width="80" height="120" rx="4" fill="#2e2924" stroke="#c9a84c" stroke-width="2.5"/>
+    <circle cx="250" cy="182" r="14" fill="#8a7233"/><path d="M226,240 C228,214 238,204 250,204 C262,204 272,214 274,240 z" fill="#8a7233"/>
+    <circle cx="282" cy="150" r="5" fill="#4a8b4a"/>
+    <rect x="306" y="140" width="80" height="120" rx="4" class="card"/>
+    <circle cx="346" cy="182" r="14" class="face"/><path d="M322,240 C324,214 334,204 346,204 C358,204 368,214 370,240 z" class="face"/>
+  </g>
+  <text x="250" y="282" text-anchor="middle" style="font: 12px Georgia, serif; fill: #9a8e7c;">click to show</text>
+  <path d="M50,316 L450,316 L430,334 L70,334 z" fill="#2e2924" stroke="#3d362e" stroke-width="1.5"/>
+  <text x="250" y="378" class="h" text-anchor="middle">The DM's laptop</text>
+  <text x="250" y="402" class="t" text-anchor="middle">pick the NPC the party is talking to</text>
+
+  <!-- Wi-Fi -->
+  <line x1="450" y1="210" x2="760" y2="210" stroke="#c9a84c" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+  <g fill="none" stroke="#c9a84c" stroke-width="3" stroke-linecap="round">
+    <path d="M574,172 A40,40 0 0 1 636,172"/>
+    <path d="M584,183 A26,26 0 0 1 626,183"/>
+    <path d="M594,194 A12,12 0 0 1 616,194"/>
+  </g>
+  <circle cx="605" cy="210" r="6" fill="#c9a84c"/>
+  <text x="605" y="250" class="h" text-anchor="middle">Same Wi-Fi</text>
+  <text x="605" y="274" class="t" text-anchor="middle">no internet, no accounts</text>
+
+  <!-- Phones -->
+  <rect x="804" y="102" width="140" height="236" rx="18" fill="#1f1b17" stroke="#3d362e" stroke-width="1.5"/>
+  <rect x="792" y="96" width="140" height="236" rx="18" fill="#211d19" stroke="#3d362e" stroke-width="1.5"/>
+  <rect x="780" y="90" width="140" height="236" rx="18" fill="#0e0c0a" stroke="#8a7233" stroke-width="1.5"/>
+  <rect x="800" y="120" width="100" height="134" rx="3" fill="#231f1b" stroke="#c9a84c" stroke-width="2"/>
+  <circle cx="850" cy="170" r="21" fill="#8a7233"/>
+  <path d="M813,254 C815,216 832,200 850,200 C868,200 885,216 887,254 z" fill="#8a7233"/>
+  <text x="850" y="290" text-anchor="middle" style="font: italic 16px Georgia, serif; fill: #c9a84c;">Finnik</text>
+  <text x="850" y="378" class="h" text-anchor="middle">The players' phones</text>
+  <text x="850" y="402" class="t" text-anchor="middle">every phone shows the portrait</text>
+</svg>

@@ -6,24 +6,22 @@ The DM runs a lightweight web server on their laptop. Players open a URL on thei
 
 *The name is a nod to [Sly Flourish](https://slyflourish.com/)'s approach to bringing NPCs to life at the table.*
 
----
-
 ## How It Works
 
-```
-DM laptop (server + control panel)
-        │
-        └── Wi-Fi (local network)
-                │
-                ├── Player phone 1  →  portrait display
-                ├── Player phone 2  →  portrait display
-                └── Player phone N  →  portrait display
-```
+![Architecture: the DM laptop runs an Express server and the DM panel; player phones on the same Wi-Fi poll it every 2 seconds for the active portrait](docs/architecture.svg)
 
 1. The DM starts the server on their laptop
 2. Players open the **Player URL** on their phones (same Wi-Fi network)
 3. The DM picks an NPC from the control panel — the portrait appears on all phones simultaneously
 4. The DM can dismiss the portrait or switch to another NPC at any time
+
+---
+
+## Demo
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Dramatis Personae at the table: the DM picks an NPC and the portrait appears on a phone" width="640">
+</p>
 
 ---
 
@@ -141,6 +139,7 @@ dramatis-personae/
 │   ├── dm.html          # DM control panel
 │   ├── players.html     # Player portrait display
 │   └── portraits/       # Uploaded and manually added portrait images
+├── docs/                # README images (architecture, demo)
 ├── server.js            # Express server + API
 └── package.json
 ```

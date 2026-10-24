@@ -23,6 +23,21 @@ const upload = multer({
   }
 });
 
+const MIME_TO_EXT = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp' };
+
+function buildFilename(npcName, mimetype, originalname) {
+  const ext = MIME_TO_EXT[mimetype] || path.extname(originalname).toLowerCase() || '.jpg';
+  const sanitized = npcName.replace(/[/\\:*?"<>|]/g, '').trim();
+  const ts = Date.now();
+  let filename = `${ts}-${sanitized}${ext}`;
+  let i = 2;
+  while (fs.existsSync(path.join(UPLOAD_DIR, filename))) {
+    filename = `${ts}-${sanitized}_${i}${ext}`;
+    i++;
+  }
+  return filename;
+}
+
 // In-memory state
 let npcs = [];       // [{ id, name, image }]
 let activeId = null;  // currently displayed NPC id
@@ -68,11 +83,13 @@ app.get('/api/npcs', (_, res) => res.json(npcs));
 // Add NPC
 app.post('/api/npcs', upload.single('image'), (req, res) => {
   if (!req.file || !req.body.name) return res.status(400).json({ error: 'name and image required' });
-  const idMatch = req.file.filename.match(/^(\d+)-/);
+  const filename = buildFilename(req.body.name.trim(), req.file.mimetype, req.file.originalname);
+  fs.renameSync(path.join(UPLOAD_DIR, req.file.filename), path.join(UPLOAD_DIR, filename));
+  const idMatch = filename.match(/^(\d+)-/);
   const npc = {
-    id: idMatch ? idMatch[1] : Date.now().toString(),
+    id: idMatch[1],
     name: req.body.name.trim(),
-    image: `/portraits/${req.file.filename}`
+    image: `/portraits/${filename}`
   };
   npcs.push(npc);
   res.status(201).json(npc);
@@ -115,7 +132,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  ⚔️  Dramatis Personae`);
   console.log(`  ─────────────────────`);
   console.log(`  DM Panel:     http://localhost:${PORT}/dm`);
-  console.log(`  Player View:  http://${LOCAL_IP}:${PORT}/players`);
+  console.log(`  Player View:  http://${LOCAL_IP}:${PORT}/`);
   console.log(`  Portraits:    ${npcs.length} loaded from disk`);
   console.log(`\n  Share the Player URL with phones on the same network.\n`);
 });

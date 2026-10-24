@@ -227,6 +227,7 @@
   /* --- Connection info --- */
   .conn-info {
     margin-top: 2rem;
+    margin-bottom: 2rem;
     padding: 1rem;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -284,12 +285,13 @@
   <p class="paste-hint">or paste an image with CRTL+V anywhere in the page</p>
   <button class="btn-deactivate" id="btnDeactivate" style="display:none">✕ Hide Portrait</button>
 
-  <div id="npcGrid" class="npc-grid"></div>
-  <div id="empty" class="empty">No NPCs yet. Add one above to get started.</div>
-
   <div class="conn-info">
     Player view: open <code id="playerUrl">/players</code> on a phone in the same network
   </div>
+
+  <div id="npcGrid" class="npc-grid"></div>
+  <div id="empty" class="empty">No NPCs yet. Add one above to get started.</div>
+
 
 </div>
 
@@ -364,7 +366,7 @@
       form.append('image', fileInput.files[0]);
     } else {
       const ext = pastedFile.type.split('/')[1] || 'png';
-      form.append('image', new File([pastedFile], `${name}.${ext}`, { type: pastedFile.type }));
+      form.append('image', new File([pastedFile], `portrait.${ext}`, { type: pastedFile.type }));
     }
     btnAdd.disabled = true;
     const res = await fetch('/api/npcs', { method: 'POST', body: form });
@@ -398,6 +400,10 @@
   // --- Deactivate ---
   btnDeactivate.addEventListener('click', () => setActive(null));
 
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   // --- Render ---
   function render() {
     if (!npcs.length) {
@@ -412,9 +418,9 @@
     grid.innerHTML = npcs.map(n => `
       <div class="npc-card ${n.id === activeId ? 'active' : ''}" onclick="setActive('${n.id}')">
         <div class="active-badge"></div>
-        <img class="portrait" src="${n.image}" alt="${n.name}" loading="lazy">
+        <img class="portrait" src="${n.image}" alt="${escHtml(n.name)}" loading="lazy">
         <div class="info">
-          <span class="name">${n.name}</span>
+          <span class="name">${escHtml(n.name)}</span>
           <button class="btn-delete" onclick="deleteNpc('${n.id}', event)" title="Remove">✕</button>
         </div>
       </div>
@@ -427,7 +433,10 @@
       fetch('/api/npcs').then(r => r.json()),
       fetch('/api/active').then(r => r.json())
     ]);
-    npcs = npcRes.sort((a, b) => a.name.localeCompare(b.name, 'it', { sensitivity: 'base' }));
+    npcs = npcRes.sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name, 'it', { sensitivity: 'base' });
+      return cmp !== 0 ? cmp : Number(a.id) - Number(b.id);
+    });
     activeId = activeRes.active?.id || null;
     render();
   }
